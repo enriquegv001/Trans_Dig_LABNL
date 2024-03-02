@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status, Query, Response
 from fastapi.middleware.cors import CORSMiddleware 
 import uvicorn 
 from pydantic import BaseModel
-from random import randrange
+from random import randrange, randint
 
 app = FastAPI() 
 
@@ -26,54 +26,117 @@ async def root():
 
 # Usuarios
 class User(BaseModel):
-    userName: str
+    email: str
+    password: str
+    nombre: str
+    apellidos: str
+    fechaNacimiento: str
+    paisNacimiento: str
+    telefono: str
+    genero: str
+    escolaridad: str
+    codigoPostal: str
+    estado: str
+    ciudad: str
+    colonia: str
+    capacidadEspecial: str
+    lenguaIndigena: str
+    asociacion: str
+    nombreAsociacion: str
+    ocupacion: str
+    deseasRecibirInformacion: str
 
 class Registro(BaseModel):
     id: str
-    registro: str
+    timestamp: str
+    actividad: str
+    proyectoInsccrito: str
+    tuImagenPuedeSerCompartida: str
 
+class Login(BaseModel):
+    email: str
+    password: str
 
 # User example
-users = [{"id": "A01284184", "userName": "Daniel Loredo"}, {"id": "A01284184", "userName": "Mauricio Portilla"}]
+users = [
+    {
+        "email": "A01284184@tec.mx",
+        "password": "1234",
+        "nombre": "Daniel",
+        "apellidos": "Loredo Melendez",
+        "fechaNacimiento": "22/03/2002",
+        "paisNacimiento": "Mexico",
+        "telefono": "8112505850",
+        "genero": "Masculino",
+        "escolaridad": "Primaria",
+        "codigoPostal": "67176",
+        "estado": "Nuevo Leon",
+        "ciudad": "Guadalupe",
+        "colonia": "Bosques",
+        "capacidadEspecial": "",
+        "lenguaIndigena": "",
+        "asociacion": "",
+        "nombreAsociacion": "",
+        "ocupacion": "Estudiante",
+        "deseasRecibirInformacion": "",
+    }
+]
 
 # Registro example 
-registros = [{"id": "A01284184", "registro": "Hola"}, {"id": "A01284184", "registro": "Hola"}]
+registros = [
+    # {
+    #     "id": randint(1, 1000000),
+    #     "user": "A01284184@tec.mx",
+    #     "fechaAcceso": "22/13/2024",
+    #     "actividad": "Uno libre",
+    #     "proyectoInsccrito": "",
+    #     "tuImagenPuedeSerCompartida": False
+    # }
+]
 
 
 # 1. GET all users (get)
 @app.get("/users")
 def get_all_users():
+    # GET USERS in SQL TABLE
     return users
 
-# 2. Crear usuario (POST)
-@app.post('/user')
-def create_user(user: User):
-    newUser = user.__dict__
-    newUser["id"] = randrange(0, 1000000)
-    users.append(newUser)
-    return {"new user": newUser}
-
-# 3. GET user by id (GET)
-@app.get("/user/{id}")
-def get_user_by_id(id: int):
-    # Buscar el usuiario por la id
+# 2. GET user by email (GET)
+@app.get("/user/{email}")
+def get_user_by_id(email: str):
+    # GET USER BY EMAIL SQL
     selectedUser = {}
     for user in users:
-        if user["id"] == id:
+        if user["email"] == email:
             selectedUser = user
 
     if not selectedUser:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"User with ID {id} not found")
+                            detail=f"User with correo electronico {email} not found")
     return {"user": selectedUser}
 
+# 3. Crear usuario (POST)
+@app.post('/signup')
+def create_user(user: User):
+    # POST USER connection SQL
+    return {"user": user}
 
-# 4. Borrar usuario (delete)
-@app.delete('/user/{id}')
-def delete_user(id: int):
-    return {"usuario borrado": id}
+# 4. Login del usuario
+@app.post('/login')
+def login_user(login: Login):
+    # CHECK IF THE email MATCH A PASSOWRD IN DATABSE
+    user = get_user_by_id(login.email)
+    return user
 
-# 5. Login del usuario
+# 5. Validate a user from tap action in card
+@app.post('/lecturaCredencial')
+def lectura_credencial(email: str):
+    # CHECK IF THE email EXIST IN SQL TABLE
+    data = get_user_by_id(email)
+    # ADD THE REGISTRO TO THE SQL DATABASE
+    registroNuevo = create_registro(data["user"])
+
+    return registroNuevo
 
 # 6. Get all registros de acceso
 @app.get('/registros')
@@ -81,9 +144,28 @@ def get_all_registros():
     return registros
 
 # 7. Registrar acceso (create)
-@app.post('/registro')
-def create_registro(registro: Registro):
-    return registros
+def create_registro(user: User):
+    # POST REGISTRO IN SQL TABLE
+    
+    nuevoRegistro = {
+        "id": randint(1, 1000000),
+        "nombre": user["nombre"],
+        "fechaAcceso": "22/13/2024",
+        "actividad": "Uno libre",
+        "proyectoInsccrito": "",
+        "tuImagenPuedeSerCompartida": False
+    }
+    
+    registros.append(nuevoRegistro)
+    return nuevoRegistro
+
+@app.get('/revisarUltimoRegistro')
+def revisar_ultimo_registro():
+    # REGRESAR EL ULTIMO REGISTRO
+    if(len(registros) > 0):
+        return registros[-1]
+    else:
+        return
 
 
 if __name__ == "__main__":
