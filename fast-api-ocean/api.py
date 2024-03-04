@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn 
 from pydantic import BaseModel
 from random import randrange, randint
+import datetime
 
 app = FastAPI() 
 
@@ -47,11 +48,12 @@ class User(BaseModel):
     deseasRecibirInformacion: str
 
 class Registro(BaseModel):
-    id: str
-    timestamp: str
+    id: int
+    nombre: str
+    fechaAcceso: str
     actividad: str
-    proyectoInsccrito: str
-    tuImagenPuedeSerCompartida: str
+    proyectoInscrito: str
+    tuImagenPuedeSerCompartida: bool
 
 class Login(BaseModel):
     email: str
@@ -94,6 +96,8 @@ registros = [
     # }
 ]
 
+ultimoRegistro = {"id": 0}
+
 
 # 1. GET all users (get)
 @app.get("/users")
@@ -134,7 +138,7 @@ def lectura_credencial(email: str):
     # CHECK IF THE email EXIST IN SQL TABLE
     data = get_user_by_id(email)
     # ADD THE REGISTRO TO THE SQL DATABASE
-    registroNuevo = create_registro(data["user"])
+    registroNuevo = buildRegistro(data["user"])
 
     return registroNuevo
 
@@ -143,26 +147,34 @@ def lectura_credencial(email: str):
 def get_all_registros():
     return registros
 
-# 7. Registrar acceso (create)
-def create_registro(user: User):
-    # POST REGISTRO IN SQL TABLE
-    
+# 7. Retornar registro
+def buildRegistro(user: User):
+    currentTime = datetime.datetime.now()
+
     nuevoRegistro = {
         "id": randint(1, 1000000),
-        "nombre": user["nombre"],
-        "fechaAcceso": "22/13/2024",
-        "actividad": "Uno libre",
-        "proyectoInsccrito": "",
+        "nombre": user["nombre"] + " " + user["apellidos"],
+        "fechaAcceso": currentTime,
+        "actividad": "",
+        "proyectoInscrito": "",
         "tuImagenPuedeSerCompartida": False
     }
     
     registros.append(nuevoRegistro)
     return nuevoRegistro
 
+# 7. POST Registro
+@app.post('/registro')
+def crearRegistro(registro: Registro):
+    # POST REGISTRO TO SQL DATABASE
+
+    ultimoRegistro["id"] = registro.id
+    return registro
+
 @app.get('/revisarUltimoRegistro')
 def revisar_ultimo_registro():
     # REGRESAR EL ULTIMO REGISTRO
-    if(len(registros) > 0):
+    if(len(registros) > 0 and registros[-1]["id"] != ultimoRegistro["id"]):
         return registros[-1]
     else:
         return
