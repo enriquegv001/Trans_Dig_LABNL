@@ -1,22 +1,25 @@
-# docker-compose.yml
-
 version: '3.8'
 
 services:
   web:
-    build: .
     # web service continues until Postgres is up
     # Once up, run previous command 
+    build: .
     command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0'
     volumes:
       - .:/app
-    ports:
-      - 8008:8000
+    expose:  # web service only expose to containers in port 8000
+      - 8000
     environment:
       - DATABASE_URL=postgresql://fastapi_traefik:fastapi_traefik@db:5432/fastapi_traefik
     depends_on:
       - db
-  db: # service 
+    labels:
+      # enables Traefik to discover the service
+      - "traefik.enable=true" 
+      # request is redirected to the service
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
+  db:
     image: postgres:15-alpine
     volumes: # config to persist data beyond life of the container
       - postgres_data:/var/lib/postgresql/data/
@@ -26,6 +29,16 @@ services:
       - POSTGRES_USER=fastapi_traefik
       - POSTGRES_PASSWORD=fastapi_traefik
       - POSTGRES_DB=fastapi_traefik
+  traefik: # new
+    image: traefik:v2.9.6
+    ports:
+      - 8008:80
+      - 8081:8080
+    volumes:
+      # settings kept in sync: maps local config file 
+      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
+      # enable Traefik to discover other containers
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
 volumes:
   postgres_data:
