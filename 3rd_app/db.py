@@ -42,6 +42,9 @@ cur.execute("""
 # Commit the transaction
 conn.commit()
 
+# Close the cursor and connection
+cur.close()
+
 
 """
 try:
