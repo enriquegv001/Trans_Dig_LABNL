@@ -21,7 +21,7 @@ cur = conn.cursor()
 cur.execute("""
     CREATE TABLE registros (
     dia date,
-    id varchar(25)
+    id varchar(25),
     nombre varchar(40),
     edad serial,
     genero VARCHAR(40),
@@ -35,7 +35,7 @@ cur.execute("""
     foto varchar(25),
     uso_datos varchar(25),
     correo varchar(25),
-    recibir_info varchar(25),
+    recibir_info varchar(25)
     )
 """)
 
