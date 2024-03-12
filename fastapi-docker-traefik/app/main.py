@@ -1,5 +1,11 @@
 from fastapi import FastAPI
 from app.db import database, User
+from pydantic import BaseModel
+
+# Pydantic model for User input
+class Item(BaseModel):
+    email: str
+    active: bool
 
 app = FastAPI(title="FastAPI, Docker, and Traefik")
 
@@ -7,24 +13,17 @@ app = FastAPI(title="FastAPI, Docker, and Traefik")
 async def read_root():
     return await User.objects.all()
 
-@app.post("/users/")
-async def create_user(user: UserBase):
-    db_user = await User.objects.get_or_create(email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return db_user
-    
-@app.on_event("startup") # Create database connection
-async def startup():
-    if not database.is_connected:
-        await database.connect()
-    # create a dummy entry
-    await User.objects.get_or_create(email="test@test.com")
+#@app.post("/items/")
+#async def create_item(item: Item):
+#    return item
 
-# Closes all connections to the databse
-@app.on_event("shutdown")
-async def shutdown():
-    if database.is_connected:
-        await database.disconnect()
+@app.post("/users/")
+async def create_user(user: Item):
+    # Create a new user instance
+    new_user = User(email=user.email, active=user.active)
+    # Save the user to the database
+    await new_user.save()
+    return {"id": new_user.id, "email": new_user.email, "active": new_user.active}
+
 
         
