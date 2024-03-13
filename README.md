@@ -40,6 +40,8 @@ Web Application backend for registry process at labnl. Deveopling a service of d
 
 - **Contact:** enriquegv001@gmail.com
 
+
+<!--
 ## License
 
 This project is licensed under the [License Name] License - see the [LICENSE](LICENSE) file for details.
@@ -48,4 +50,4 @@ This project is licensed under the [License Name] License - see the [LICENSE](LI
 ## Badges
 
 [![License](https://img.shields.io/badge/License-[License Code]-blue.svg)](LICENSE)
-
+-->
