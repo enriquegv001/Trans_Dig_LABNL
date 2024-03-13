@@ -34,6 +34,7 @@ Web Application backend for registry process at labnl. Deveopling a service of d
    uvicorn main:app --reload
    ```
 4. Add any other CRUD opperation to the ```main.py```
+5. For more information check the [documentation](https://docs.google.com/document/d/1vKT8tjtunVPKwZY-XdxStC1QZ8I1glydRaBTQ3dMWuM/edit?usp=sharing)
    
    
 ## Credits
