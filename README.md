@@ -2,6 +2,8 @@
 
 Web Application backend for registry process at labnl. Deveopling a service of data ingestion, applying a digital transformation methodology for virtualizing the application via hosting application service in docker container in cloud from Digital Ocean. Check also [Digital Transformation implementation](https://github.com/enriquegv001/Trans_Dig_LABNL/blob/main/Business%20Case.pdf).
 
+![alt text](https://github.com/enriquegv001/Trans_Dig_LABNL/blob/main/BackendArch.jpg)
+
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
